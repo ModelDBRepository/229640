@@ -1,0 +1,64 @@
+## Steps to generate the bifurcation curves shown in Figure 11 panel C:
+## 1) Load this .ode file into XPPAUT 
+## 2) For the top part of panel C, set gtonic to 0.12 for cyan curve, 0.22 for green curve, and 0.18 magenta curve
+## 3) For the bottom part of panel C, set gtonic to 0.57 for green curve and 0.35 for magenta curve (cyan curve is same as top)
+## 3) Keystrokes to run simulation and compute bifurcation curve: (i)(g)(i)(l)(f)(a)(r)(s)
+## 4) Keystrokes to save the data: (f)(w), and then click on Ok 
+
+# BRS model fast subsystem with h as bifurcation parameter
+par h=-2
+
+# Set gtonic as described above for accordingly for panel C
+par gtonic=0.1247
+#par gtonic=0.2194
+#par gtonic=0.1806
+#par gtonic=0.5709
+#par gtonic=0.3461
+
+# parameters
+par i=0,c=21,etonic=0
+par gl=2.8,el=-65
+par gna=28,ena=50
+par gk=11.2,ek=-85
+par gnap=2.8
+
+# gating functions
+xinf(v,vt,sig)=1/(1+exp((v-vt)/sig))
+taux(v,vt,sig,tau)=tau/cosh((v-vt)/(2*sig))
+
+# persistent sodium
+pinf(v)=xinf(v,-40,-6)
+inap=gnap*pinf(v)*h*(v-ena)
+
+# transient sodium 
+minf(v)=xinf(v,-34,-5)
+ina=gna*minf(v)^3*(1-n)*(v-ena)
+
+# potassium
+ninf(v)=xinf(v,-29,-4)
+taun(v)=taux(v,-29,-4,10)
+ik=gk*n^4*(v-ek)
+
+# leak
+il=gl*(v-el)
+
+# tonic
+itonic=gtonic*(v-etonic)
+
+# differential equations
+v' = (i-il-ina-ik-inap-itonic)/c
+n'=(ninf(v)-n)/taun(v)
+
+init v=-60
+
+# XPP settings
+@ total=40000,dt=.1,meth=cvode,maxstor=10000000
+@ tol=1e-8,atol=1e-8
+@ xlo=0,xhi=40000,ylo=-80,yhi=20
+
+# AUTO settings
+@ parmin=-100,parmax=100,autoxmin=-2,autoxmax=2,autoymin=-80,autoymax=20
+@ dsmin=1e-4,dsmax=.1,nmax=500
+
+done
+
